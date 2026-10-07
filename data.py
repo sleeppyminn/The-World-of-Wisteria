@@ -1,8 +1,3 @@
-# ═══════════════════════════════════════════════════════
-#  data.py — All game constants, styles, story, items
-# ═══════════════════════════════════════════════════════
-
-# ── ANSI COLORS ─────────────────────────────────────────
 RESET   = "\033[0m"
 RED     = "\033[31m"
 GREEN   = "\033[32m"
@@ -14,35 +9,29 @@ MAGENTA = "\033[35m"
 WHITE   = "\033[37m"
 BLUE    = "\033[34m"
 
-# ── CONSTANTS ────────────────────────────────────────────
 MAX_HP          = 100
-EXP_PER_LEVEL   = 50        # exp needed to level up
-LEVEL_HP_BONUS  = 15        # HP increase per level-up
-LEVEL_ATK_BONUS = 3         # ATK increase per level-up
+EXP_PER_LEVEL   = 50
+LEVEL_HP_BONUS  = 15
+LEVEL_ATK_BONUS = 3
 MIN_DAMAGE      = 1
 TRAIN_CAP       = 5
 
-# ── CLANS ────────────────────────────────────────────────
 CLAN_POOL = {
-    # ── Common ───────────────────────────────────────────
     "Yamamoto":    {"rarity": "Common",    "stats": (2,  2,  3)},
     "Suzuki":      {"rarity": "Common",    "stats": (3,  1,  3)},
     "Hasegawa":    {"rarity": "Common",    "stats": (2,  3,  2)},
     "Nakamura":    {"rarity": "Common",    "stats": (1,  2,  4)},
     "Inoue":       {"rarity": "Common",    "stats": (3,  2,  2)},
     "Fujiwara":    {"rarity": "Common",    "stats": (2,  1,  4)},
-    # ── Uncommon ─────────────────────────────────────────
     "Kaneki":      {"rarity": "Uncommon",  "stats": (3,  4,  3)},
     "Nakahara":    {"rarity": "Uncommon",  "stats": (4,  3,  3)},
     "Takada":      {"rarity": "Uncommon",  "stats": (3,  3,  4)},
     "Terauchi":    {"rarity": "Uncommon",  "stats": (4,  2,  4)},
-    # ── Rare ─────────────────────────────────────────────
     "Haganezuka":  {"rarity": "Rare",      "stats": (5,  4,  6)},
     "Kanamori":    {"rarity": "Rare",      "stats": (4,  5,  6)},
     "Kanzaki":     {"rarity": "Rare",      "stats": (5,  6,  4)},
     "Ubuyashiki":  {"rarity": "Rare",      "stats": (4,  7,  5)},
     "Urokodaki":   {"rarity": "Rare",      "stats": (6,  4,  5)},
-    # ── Legendary ────────────────────────────────────────
     "Rengoku":     {"rarity": "Legendary", "stats": (7,  3,  5)},
     "Uzui":        {"rarity": "Legendary", "stats": (6,  6,  5)},
     "Hashibira":   {"rarity": "Legendary", "stats": (8,  3,  7)},
@@ -55,12 +44,10 @@ CLAN_POOL = {
     "Tamayo":      {"rarity": "Legendary", "stats": (4,  7,  7)},
     "Iguro":       {"rarity": "Legendary", "stats": (6,  7,  5)},
     "Kanroji":     {"rarity": "Legendary", "stats": (5,  7,  6)},
-    # ── Mythic ───────────────────────────────────────────
     "Yoriichi":    {"rarity": "Mythic",    "stats": (14, 12, 10)},
     "Tsugikuni":   {"rarity": "Mythic",    "stats": (12, 10, 12)},
     "Kamado":      {"rarity": "Mythic",    "stats": (10, 10, 11)},
     "Himejima":    {"rarity": "Mythic",    "stats": (10, 8,  14)},
-    # ── Secret ───────────────────────────────────────────
     "Yoo":         {"rarity": "Secret",    "stats": (15, 18, 15)},
     "Tolentino":   {"rarity": "Secret",    "stats": (17, 16, 16)},
     "Nona":        {"rarity": "Secret",    "stats": (18, 15, 17)},
@@ -84,9 +71,6 @@ RARITY_WEIGHTS = {
     "Secret":     1,
 }
 
-
-
-# ── RANKS ────────────────────────────────────────────────
 SLAYER_RANKS = [
     ("Mizunoto",    0),
     ("Mizunoe",     5),
@@ -122,7 +106,6 @@ DEMON_RANKS = [
     ("Demon King",                   460),
 ]
 
-# ── BREATHING STYLES ────────────────────────────────────
 BREATHING_STYLES = [
     "Water", "Flame", "Thunder", "Wind", "Stone",
     "Insect", "Sound", "Love", "Serpent", "Mist"
@@ -217,7 +200,6 @@ BREATHING_FORMS = {
     ],
 }
 
-# ── BLOOD DEMON ARTS ────────────────────────────────────
 BLOOD_ARTS = {
     "Spiderweb Cutting Thread": [
         ("Cutting Thread Rotation",          5,  "Spinning webs of razor thread slice everything around you."),
@@ -265,7 +247,6 @@ BLOOD_ARTS = {
 
 DEMON_ART_STYLES = list(BLOOD_ARTS.keys())
 
-# ── CUSTOM BREATHING TEMPLATE ───────────────────────────
 CUSTOM_BREATHING_TEMPLATE = {
     "forms": [
         ("1st Form: {name}'s Opening Strike",  6,  "A form born from your own instinct — the first step."),
@@ -281,7 +262,6 @@ CUSTOM_BREATHING_TEMPLATE = {
     ),
 }
 
-# ── ITEMS ────────────────────────────────────────────────
 ITEMS = {
     "Wisteria Herb":    {"desc": "A medicinal herb. Restores 25 HP.",        "type": "heal",   "value": 25},
     "Corps Ration":     {"desc": "Standard field ration. Restores 40 HP.",   "type": "heal",   "value": 40},
@@ -301,7 +281,6 @@ SHOP_PRICES = {
     "Sharpening Stone": 30,
 }
 
-# ── MISSIONS ─────────────────────────────────────────────
 SLAYER_HQ_MISSIONS = [
     {"title": "Rescue at Kushi Village",
      "briefing": "Villagers report a demon picking off travellers on the eastern road. Eliminate it.",
@@ -356,11 +335,7 @@ DEMON_HQ_MISSIONS = [
      "drop": ("Muzan's Shard",    0.10)},
 ]
 
-# ── STORY ────────────────────────────────────────────────
 SLAYER_STORY = [
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 1
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Mizunoe", "title": "CHAPTER 1 — THE FIRST NIGHT",
         "lines": [
@@ -380,9 +355,6 @@ SLAYER_STORY = [
             "You pocket the carving. You won't stop.",
         ],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 2
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Kanoe", "title": "CHAPTER 2 — THE TSUZUMI MANSION",
         "lines": [
@@ -405,9 +377,6 @@ SLAYER_STORY = [
             "The Corps promotes you. Your name is spreading.",
         ],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 3
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Tsuchinoe", "title": "CHAPTER 3 — MOUNT NATAGUMO",
         "lines": [
@@ -433,9 +402,6 @@ SLAYER_STORY = [
             "You are promoted to Hinoe. The demons are beginning to fear your name.",
         ],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 4 — MUGEN TRAIN (multi-stage)
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Kinoe", "title": "CHAPTER 4 — THE MUGEN TRAIN",
         "multi_stage": True,
@@ -533,9 +499,6 @@ SLAYER_STORY = [
         "lines": [], "boss": "", "boss_hp": 0, "boss_atk": 0, "exp": 200,
         "victory_lines": [],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 5 — ENTERTAINMENT DISTRICT (multi-stage)
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Hashira", "title": "CHAPTER 5 — ENTERTAINMENT DISTRICT",
         "multi_stage": True,
@@ -592,9 +555,6 @@ SLAYER_STORY = [
         "lines": [], "boss": "", "boss_hp": 0, "boss_atk": 0, "exp": 180,
         "victory_lines": [],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 6 — SWORDSMITH VILLAGE
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Hashira", "title": "CHAPTER 6 — THE SWORDSMITH VILLAGE",
         "lines": [
@@ -619,9 +579,6 @@ SLAYER_STORY = [
             "Every Hashira prepares. You prepare.",
         ],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 7 — HASHIRA TRAINING (multi-stage)
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Hashira", "title": "CHAPTER 7 — HASHIRA TRAINING",
         "multi_stage": True,
@@ -690,9 +647,6 @@ SLAYER_STORY = [
         "lines": [], "boss": "", "boss_hp": 0, "boss_atk": 0, "exp": 220,
         "victory_lines": [],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 8 — FINAL DAWN (7 stages)
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Hashira", "title": "CHAPTER 8 — FINAL DAWN",
         "multi_stage": True,
@@ -875,9 +829,6 @@ SLAYER_STORY = [
         "lines": [], "boss": "", "boss_hp": 0, "boss_atk": 0, "exp": 300,
         "victory_lines": [],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 9 — DEMON KING (secret ending)
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Hashira", "title": "CHAPTER 9 — DEMON KING",
         "lines": [
@@ -924,9 +875,6 @@ SLAYER_STORY = [
 ]
 
 DEMON_STORY = [
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 1
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Demon", "title": "CHAPTER 1 — YOUR FIRST HUNT",
         "lines": [
@@ -957,9 +905,6 @@ DEMON_STORY = [
             "...Do they?",
         ],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 2
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Intermediate Demon", "title": "CHAPTER 2 — MUZAN'S NOTICE",
         "lines": [
@@ -991,9 +936,6 @@ DEMON_STORY = [
             "And the Demon Slayer Corps has just put your name on their list.",
         ],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 3
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Lower Six", "title": "CHAPTER 3 — THE TWELVE KIZUKI",
         "lines": [
@@ -1024,9 +966,6 @@ DEMON_STORY = [
             "That night you dream of sunlight. You don't know why.",
         ],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 4
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Upper Three", "title": "CHAPTER 4 — THE CORPS CLOSES IN",
         "lines": [
@@ -1057,9 +996,6 @@ DEMON_STORY = [
             "That night, for the first time in years, you dream of being warm.",
         ],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 5
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Upper One", "title": "CHAPTER 5 — MUZAN'S FURY",
         "lines": [
@@ -1093,9 +1029,6 @@ DEMON_STORY = [
             "And Muzan is afraid — though he would never show it.",
         ],
     },
-    # ─────────────────────────────────────────────────────
-    #  CHAPTER 6
-    # ─────────────────────────────────────────────────────
     {
         "rank": "Demon King", "title": "CHAPTER 6 — THE CHOICE",
         "lines": [
@@ -1161,8 +1094,6 @@ FINAL_SELECTION_ENEMIES = [
     {"name": "Hand Demon",         "hp": 100, "atk": 16},
 ]
 
-# ── NICHIRIN SWORDS ──────────────────────────────────────
-# rarity weights: Common 45, Uncommon 30, Rare 15, Legendary 8, Mythical 3
 NICHIRIN_SWORD_WEIGHTS = {
     "Common": 45, "Uncommon": 30, "Rare": 15, "Legendary": 8, "Mythical": 3,
 }
@@ -1220,7 +1151,6 @@ NICHIRIN_SWORDS = {
                       "owner": "Andrew Nona",    "rarity": "Mythical"},
 }
 
-# ── DEMON SLAYER MARK ────────────────────────────────────
 MARK_DESCRIPTIONS = {
     "Water":   "A flowing wave crest appears on your cheek — Tomioka's mark, reborn in you.",
     "Flame":   "A flame pattern blazes across your forehead — Rengoku's fire lives on.",
