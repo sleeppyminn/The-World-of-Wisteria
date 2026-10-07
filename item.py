@@ -1,17 +1,7 @@
-# ═══════════════════════════════════════════════════════
-#  item.py — Item class
-#  Demonstrates: encapsulation, __str__, __repr__, use()
-# ═══════════════════════════════════════════════════════
-
 from data import ITEMS, GREEN, YELLOW, RESET, BOLD, DIM
 
 
 class Item:
-    """
-    Represents a usable item in the player's inventory.
-    Encapsulates name, item_type, effect_value and
-    exposes them via @property for controlled access.
-    """
 
     def __init__(self, name: str):
         if name not in ITEMS:
@@ -22,7 +12,6 @@ class Item:
         self._effect_value= data["value"]
         self._desc: str   = data["desc"]
 
-    # ── properties ───────────────────────────────────────
     @property
     def name(self) -> str:
         return self._name
@@ -39,12 +28,7 @@ class Item:
     def desc(self) -> str:
         return self._desc
 
-    # ── use ──────────────────────────────────────────────
     def use(self, target) -> str:
-        """
-        Apply this item's effect to target (a Player).
-        Returns a description string of what happened.
-        """
         t, v = self._item_type, self._effect_value
 
         if t == "heal":
@@ -69,7 +53,6 @@ class Item:
 
         return f"{YELLOW}Used {self._name}. Nothing happened.{RESET}"
 
-    # ── magic methods ────────────────────────────────────
     def __str__(self) -> str:
         return f"{BOLD}{self._name}{RESET} — {DIM}{self._desc}{RESET}"
 
