@@ -1,10 +1,3 @@
-# ═══════════════════════════════════════════════════════
-#  game.py — Game class (main controller)
-#  Demonstrates: Game loop (while), input validation
-#  (try-except), iterative menus (for/enumerate),
-#  conditional logic (if-elif-else), OOP aggregation
-# ═══════════════════════════════════════════════════════
-
 import random
 import time
 import os
@@ -13,9 +6,7 @@ from player import Player
 from enemy  import Enemy
 from item   import Item
 from data   import (
-    # colors
     RESET, RED, GREEN, YELLOW, CYAN, BOLD, DIM, MAGENTA, BLUE, WHITE,
-    # game data
     CLAN_POOL, RARITY_COLORS, RARITY_WEIGHTS,
     SLAYER_RANKS, DEMON_RANKS,
     BREATHING_STYLES, BREATHING_FORMS,
@@ -29,19 +20,15 @@ from data   import (
     MAX_HP, EXP_PER_LEVEL,
 )
 from anim import (
-    breathing_form_banner,   # shimmer banner on form use
-    ultimate_flash,          # full-screen color surge on ultimate
-    style_colored,           # inline style-colored damage text
-    animated_main_menu,      # animated main menu with pulsing options
-    ascii_header,            # 3d_diagonal pre-rendered art headers
-    battle_header,           # instant static header for in-combat loop
-    path_colored_header,     # path-tinted header for the main game loop
+    breathing_form_banner,
+    ultimate_flash,
+    style_colored,
+    animated_main_menu,
+    ascii_header,
+    battle_header,
+    path_colored_header,
 )
 
-
-# ═══════════════════════════════════════════════════════
-#  UI HELPERS  (module-level, used by Game)
-# ═══════════════════════════════════════════════════════
 
 def clear() -> None:
     os.system("cls" if os.name == "nt" else "clear")
@@ -50,20 +37,12 @@ def divider(char: str = "─", width: int = 48) -> None:
     print(DIM + char * width + RESET)
 
 def header(title: str, path: str = None) -> None:
-    """
-    Displays a 3d_diagonal ASCII art header from wisteria_assets.
-    Delegates to ascii_header() from anim.py.
-    Falls back to a plain bold banner for unknown/dynamic titles.
-    Pass path="Demon"/"Human"/"Civilian" to get path-colored output;
-    omit (or pass None) for the default pink intro palette.
-    """
     ascii_header(title, path)
 
 def pause(msg: str = "[ Press ENTER to continue ]") -> None:
     input(DIM + msg + RESET)
 
 def slow_print(lines: list, delay: float = 0.05) -> None:
-    """Cinematic character-by-character print."""
     for line in lines:
         for ch in line:
             print(ch, end="", flush=True)
@@ -72,18 +51,11 @@ def slow_print(lines: list, delay: float = 0.05) -> None:
         time.sleep(delay)
 
 def get_valid_input(min_val: int, max_val: int) -> int:
-    """
-    Input validation with try-except and while loop.
-    Keeps prompting until player enters valid integer in range.
-    FR-requirement: handle invalid entries gracefully.
-    """
-    # Flush any keystrokes buffered during animations so they
-    # don't get swallowed by the first input() call.
     try:
         import termios
         termios.tcflush(0, termios.TCIFLUSH)
     except Exception:
-        pass  # not a real tty (Windows / piped input) — skip silently
+        pass
 
     while True:
         try:
@@ -95,41 +67,23 @@ def get_valid_input(min_val: int, max_val: int) -> int:
             print(f"  {RED}Invalid input — please enter a number.{RESET}")
 
 
-# ═══════════════════════════════════════════════════════
-#  GAME CLASS
-# ═══════════════════════════════════════════════════════
-
 class Game:
-    """
-    Main game controller.
-    Attributes : player (Player), enemies (list[Enemy])
-    Methods    : run(), game_loop(), start_battle(),
-                 display_menu(), and all sub-systems.
-    """
-
     def __init__(self):
-        self.player: Player        = None   # set during character creation
-        self.enemies: list[Enemy]  = []     # pool used during encounters
+        self.player: Player        = None
+        self.enemies: list[Enemy]  = []
 
     def _hdr_path(self) -> str:
-        """Return path string for header coloring, or None if no player yet."""
         if not self.player:
             return None
         if getattr(self.player, "stayed_human", False):
             return "Civilian"
         return self.player.path
 
-    # ════════════════════════════════════════════════════
-    #  ENTRY / REPLAY LOOP
-    # ════════════════════════════════════════════════════
-
     def run(self) -> None:
-        """Entry point. Supports replay without relaunching (FR requirement)."""
         self._credits_splash()
         self._cinematic_intro()
         while True:
-            # ── main menu: new game or load ───────────────
-            animated_main_menu()   # shimmer title + pulsing options
+            animated_main_menu()
             menu_choice = get_valid_input(0, 2)
             if menu_choice == 0:
                 print(f"\n  {DIM}Farewell. The night is quieter now.{RESET}\n")
@@ -138,7 +92,6 @@ class Game:
                 loaded = self._load_game()
                 if not loaded:
                     continue
-                # if civilian, go back to civilian loop
                 if self.player.stayed_human:
                     self._civilian_loop()
                     continue
@@ -148,7 +101,6 @@ class Game:
                 self._path_intro()
                 self.game_loop()
 
-            # ── replay prompt ─────────────────────────────
             clear()
             print(f"\n  {BOLD}Play again?{RESET}")
             print("  [1] Yes — start a new adventure")
@@ -158,15 +110,7 @@ class Game:
                 print(f"\n  {DIM}Farewell. The night is quieter now.{RESET}\n")
                 break
 
-    # ════════════════════════════════════════════════════
-    #  MAIN GAME LOOP  (FR06 — while loop)
-    # ════════════════════════════════════════════════════
-
     def game_loop(self) -> None:
-        """
-        Main loop that keeps the game running.
-        Demonstrates: while loop, if-elif-else, display_menu().
-        """
         game_over: bool = False
 
         while not game_over:
@@ -209,7 +153,6 @@ class Game:
                 pause()
 
     def display_menu(self) -> None:
-        """Print the main menu options."""
         print("  [1] HQ Missions    — quick assignments")
         print("  [2] Story Missions — main narrative")
         print("  [3] Train")
@@ -222,10 +165,6 @@ class Game:
             print(f"  [9] {YELLOW}Forge Custom Breathing Style{RESET}")
         print("  [0] Quit")
 
-    # ════════════════════════════════════════════════════
-    #  COMBAT  (FR02 — turn-based; FR07 — win/lose logic)
-    # ════════════════════════════════════════════════════
-
     def start_battle(
         self,
         enemy_name: str,
@@ -237,12 +176,6 @@ class Game:
         exp_reward: int  = 0,
         drop_table: tuple= None,
     ) -> bool:
-        """
-        Turn-based combat loop (FR02).
-        Player and enemy alternate turns.
-        Returns True on player victory, False on defeat.
-        Demonstrates: while loop, if-elif-else, critical hit conditional.
-        """
         p = self.player
         enemy = Enemy(
             name         = enemy_name,
@@ -256,12 +189,10 @@ class Game:
         header("BATTLE", self._hdr_path())
         print(f"  {RED}{enemy}{RESET}\n")
 
-        # battle state flags (bool variables — FR requirement)
         p.mark_used    = False
         mark_active    = False
         is_blocking    = False
 
-        # ── combat loop ──────────────────────────────────
         while p.is_alive() and enemy.is_alive():
             clear()
             battle_header()
@@ -276,7 +207,6 @@ class Game:
             print("  [1] Basic Attack")
             print("  [2] Use Style Form")
 
-            # context-sensitive option 3
             if p.path == "Human" and p.custom_style:
                 toggle = "Switch to Custom" if not p.using_custom else "Switch to Original"
                 print(f"  [3] {toggle} Style")
@@ -286,7 +216,6 @@ class Game:
             print("  [4] Block")
             print("  [5] Use Item")
 
-            # ultimate technique
             has_ult = False
             if p.path == "Human":
                 if p.using_custom and p.custom_ult:
@@ -298,17 +227,14 @@ class Game:
                     print(f"  [6] {YELLOW}ULTIMATE: {ult_name}{RESET}")
                     has_ult = True
 
-            # mark activation
             can_mark = (p.path == "Human" and p.mark_awakened
                         and not p.mark_used and not mark_active)
             if can_mark:
                 print(f"  [M] {YELLOW}{BOLD}✦ Activate Demon Slayer Mark{RESET}"
                       f"  {DIM}(once per battle — costs 10 HP){RESET}")
 
-            # ── get player input (validated) ─────────────
             action = input("\n  > ").strip().lower()
 
-            # ── mark activation ──────────────────────────
             if action == "m" and can_mark:
                 mark_active    = True
                 p.mark_used    = True
@@ -319,10 +245,8 @@ class Game:
                 print(f"  {DIM}{desc}{RESET}")
                 print(f"  {RED}-10 HP{RESET}  |  {GREEN}ATK ×2 | Forms ×2 this turn{RESET}")
                 time.sleep(0.1)
-                # no further action this turn — fall through to enemy turn
                 action = ""
 
-            # ── player actions ───────────────────────────
             if action == "1":
                 mark_bonus = 8 if mark_active else 0
                 dmg = max(1, p.atk + mark_bonus + random.randint(-2, 3))
@@ -350,7 +274,6 @@ class Game:
                         print(f"       {DIM}{fdesc}{RESET}")
                     print("  [0] Cancel")
 
-                    # flush buffered keystrokes before reading form choice
                     try:
                         import termios
                         termios.tcflush(0, termios.TCIFLUSH)
@@ -398,18 +321,17 @@ class Game:
                 elif p.original_ult:
                     print(f"  {DIM}{p.original_ult[2]}{RESET}")
                 time.sleep(0.1)
-                enemy.hp -= 0   # already applied in ultimate_attack
+                enemy.hp -= 0
                 print(f"  You unleash {GREEN}{BOLD}{dmg}{RESET} damage!!")
 
             elif action not in ("", "m"):
                 print(f"  {DIM}Invalid — you hesitate.{RESET}")
 
-            mark_active = False   # mark lasts one action only
+            mark_active = False
 
             if not enemy.is_alive():
                 break
 
-            # ── enemy turn ───────────────────────────────
             if is_blocking:
                 reduction = 5 + p.end // 3
                 raw       = enemy._attack_power + random.randint(-3, 3)
@@ -417,12 +339,11 @@ class Game:
                 p.hp     -= taken
                 print(f"\n  {enemy_name} attacks! {RED}{taken}{RESET} damage (blocked {reduction}).")
             else:
-                enemy.attack(p)   # Enemy.attack() — polymorphic call
+                enemy.attack(p)
 
             is_blocking = False
             time.sleep(0.8)
 
-        # ── win / lose outcome (FR07) ────────────────────
         print()
         if p.is_alive():
             print(f"  {GREEN}{BOLD}You defeated {enemy_name}!{RESET}")
@@ -435,11 +356,9 @@ class Game:
                 p.temp_atk_up = 0
                 print(f"  +{kill_reward} kill(s)  |  +{gold_reward}G  |  +{exp_reward} EXP")
 
-                # give EXP and check level-up
                 if exp_reward > 0:
                     p.gain_exp(exp_reward)
 
-            # attempt item drop
             if drop_table:
                 dropped = enemy.drop_item()
                 if dropped:
@@ -456,10 +375,6 @@ class Game:
             pause()
             return False
 
-    # ════════════════════════════════════════════════════
-    #  HQ MISSIONS  (repeatable quick assignments)
-    # ════════════════════════════════════════════════════
-
     def _hq_missions(self) -> None:
         pool  = SLAYER_HQ_MISSIONS if self.player.path == "Human" else DEMON_HQ_MISSIONS
         tier  = min(len(pool) - 1, self.player.kills // 10)
@@ -473,7 +388,6 @@ class Game:
             header(label, self._hdr_path())
             print("  Available assignments:\n")
 
-            # for/enumerate (FR requirement)
             for i, m in enumerate(offer, 1):
                 print(f"  [{i}] {BOLD}{m['title']}{RESET}")
                 print(f"       {DIM}{m['briefing']}{RESET}")
@@ -511,10 +425,6 @@ class Game:
                     pause()
                     self._try_awaken_mark()
             break
-
-    # ════════════════════════════════════════════════════
-    #  STORY MISSIONS
-    # ════════════════════════════════════════════════════
 
     def _story_missions(self) -> None:
         story  = SLAYER_STORY if self.player.path == "Human" else DEMON_STORY
@@ -562,7 +472,6 @@ class Game:
                     self._try_awaken_mark()
 
     def _play_story_chapter(self, chapter: dict) -> None:
-        """Dispatch to multi-stage or single-boss chapter handler."""
         if chapter.get("multi_stage"):
             self._play_multi_stage_chapter(chapter)
         elif chapter.get("choice_type") == "demon_king":
@@ -570,7 +479,6 @@ class Game:
         else:
             self._play_single_boss_chapter(chapter)
 
-    # ── single-boss chapter ──────────────────────────────
     def _play_single_boss_chapter(self, chapter: dict) -> None:
         clear()
         header(chapter["title"], self._hdr_path())
@@ -596,7 +504,6 @@ class Game:
             for line in chapter["victory_lines"]:
                 print("  " + line)
             print()
-            # demon final choice
             if chapter.get("choice_type") == "demon_final":
                 self._demon_final_choice(chapter)
             pause()
@@ -606,9 +513,7 @@ class Game:
             print(f"  {DIM}HP restored. Recover and try again.{RESET}")
             pause()
 
-    # ── multi-stage chapter ──────────────────────────────
     def _play_multi_stage_chapter(self, chapter: dict) -> None:
-        """Run each stage in sequence. If player loses any stage, restore HP and retry from that stage."""
         clear()
         header(chapter["title"], self._hdr_path())
         print(f"\n  {DIM}This chapter has {len(chapter['stages'])} stages.{RESET}\n")
@@ -618,7 +523,6 @@ class Game:
         exp_per_stage = total_exp // max(len(chapter["stages"]), 1)
 
         for i, stage in enumerate(chapter["stages"], 1):
-            # ── cinematic stage header ────────────────────
             while True:
                 clear()
                 print(f"\n  {BOLD}{YELLOW}[ {stage['label']} ]{RESET}\n")
@@ -626,13 +530,11 @@ class Game:
                     print("  " + line)
                 print()
 
-                # handle player choice stages
                 if stage.get("choice"):
                     print(f"\n  {BOLD}Your choice:{RESET}")
                     choice = get_valid_input(1, 2)
                     self._handle_stage_choice(stage, choice)
 
-                    # some choice stages don't have a fight
                     if not stage.get("boss"):
                         break
 
@@ -656,15 +558,13 @@ class Game:
                         print("  " + line)
                     print()
                     pause()
-                    break   # proceed to next stage
+                    break
                 else:
                     self.player.full_heal()
                     print(f"\n  {YELLOW}You fall… but the story isn't over yet.{RESET}")
                     print(f"  {DIM}HP restored. Retrying this stage.{RESET}")
                     pause()
-                    # loop continues — retry this stage
 
-        # ── chapter complete ──────────────────────────────
         clear()
         divider("═")
         print(f"\n  {GREEN}{BOLD}CHAPTER COMPLETE — {chapter['title']}{RESET}\n")
@@ -672,12 +572,9 @@ class Game:
         print()
         pause()
 
-    # ── stage choice logic ───────────────────────────────
     def _handle_stage_choice(self, stage: dict, choice: int) -> None:
-        """Handle branching narrative choices in stages."""
         label = stage.get("label", "")
 
-        # Mugen Train: Akaza — fight or hold?
         if "AKAZA" in label.upper() and "MUGEN" not in label.upper():
             if choice == 1:
                 print(f"\n  {RED}You charge at Akaza alongside Rengoku!{RESET}")
@@ -685,13 +582,11 @@ class Game:
             else:
                 print(f"\n  {CYAN}You hold the line, tending Rengoku's wounds.{RESET}")
                 print(f"  {DIM}Every second you buy him is a second closer to dawn.{RESET}\n")
-                # holding gives player an ATK buff from Rengoku's inspiration
-                self.player.atk = max(1, self.player.atk - 5)  # penalty — Rengoku's weakened
+                self.player.atk = max(1, self.player.atk - 5)
                 print(f"  {YELLOW}Rengoku inspired you: +3 END permanently.{RESET}")
                 self.player.end = getattr(self.player, 'end', 0) + 3
             time.sleep(0.8)
 
-        # Kaigaku — fight or step back?
         elif "KAIGAKU" in label.upper():
             if choice == 1:
                 print(f"\n  {RED}You fight beside Zenitsu — shoulder to shoulder.{RESET}")
@@ -701,7 +596,6 @@ class Game:
                 print(f"  {DIM}The weight of that silence — and his answer to it — is his alone.{RESET}\n")
             time.sleep(0.8)
 
-        # Demon King Chapter 9 — resist or accept?
         elif "DEMON KING" in label.upper() or "CHAPTER 9" in stage.get("label", "").upper():
             if choice == 2:
                 print(f"\n  {RED}You stop fighting the blood. You let it in.{RESET}")
@@ -713,7 +607,6 @@ class Game:
                 print(f"  {YELLOW}But you are still you. You will not let go of that.{RESET}\n")
                 time.sleep(0.8)
 
-    # ── demon king chapter 9 ─────────────────────────────
     def _play_demon_king_chapter(self, chapter: dict) -> None:
         clear()
         header(chapter["title"], self._hdr_path())
@@ -724,7 +617,6 @@ class Game:
         choice = get_valid_input(1, 2)
 
         if choice == 1:
-            # RESIST — fight Muzan's will (boss battle)
             print(f"\n  {CYAN}You raise everything you have against the blood.{RESET}\n")
             time.sleep(0.6)
             pause("[ ENTER to fight Muzan's will ]")
@@ -752,7 +644,6 @@ class Game:
                 print(f"  {DIM}But even then — a fragment of you holds on.{RESET}")
                 print(f"  {DIM}HP restored. Try again.{RESET}")
         else:
-            # ACCEPT — become Demon King (no fight needed)
             clear()
             divider("*")
             print(f"  {MAGENTA}{BOLD}THE NIGHT IS YOURS{RESET}")
@@ -765,19 +656,9 @@ class Game:
         pause()
 
     def _demon_final_choice(self, chapter: dict) -> None:
-        """For demon path Chapter 6 — what you do after defeating Muzan."""
-        # Victory lines already shown; this prompts what happens next
         print(f"\n  {BOLD}One last thing remains.{RESET}")
         print(f"  {YELLOW}What do you do with the world Muzan left behind?{RESET}\n")
         time.sleep(0.5)
-
-    # ════════════════════════════════════════════════════
-    #  TRAINING  (stat allocation)
-    # ════════════════════════════════════════════════════
-
-    # ════════════════════════════════════════════════════
-    #  TRAINING MINI-GAMES
-    # ════════════════════════════════════════════════════
 
     def _train(self) -> None:
         p = self.player
@@ -807,7 +688,6 @@ class Game:
         stat  = stat_map[choice]
         label = label_map[choice]
 
-        # run the mini-game for the chosen stat
         if   choice == 1: passed = self._minigame_strength()
         elif choice == 2: passed = self._minigame_speed()
         elif choice == 3: passed = self._minigame_endurance()
@@ -817,18 +697,12 @@ class Game:
             new_val = getattr(p, stat if stat != "str" else "str_stat")
             print(f"\n  {GREEN}{BOLD}Training successful! {label} increased to {new_val}!{RESET}")
         else:
-            # still uses a session — you trained, just failed
             p._training += 1
             print(f"\n  {RED}You pushed hard but couldn't break through this time.{RESET}")
             print(f"  {DIM}Session used. Try a different approach next time.{RESET}")
         pause()
 
-    # ── Mini-game: Strength — Boulder Smash ─────────────
     def _minigame_strength(self) -> bool:
-        """
-        Boulder Smash: Type a sequence of strike commands in order.
-        Player must enter the right keys in the right order.
-        """
         clear()
         header("BOULDER SMASH — STRENGTH TRIAL", self._hdr_path())
         slow_print([
@@ -847,7 +721,6 @@ class Game:
         print(f"  {CYAN}{' → '.join(labels[s] for s in sequence)}{RESET}\n")
         time.sleep(2.5)
 
-        # hide it
         clear()
         header("BOULDER SMASH — STRIKE!", self._hdr_path())
         print(f"  {DIM}The sequence has faded. Strike from memory.{RESET}")
@@ -875,12 +748,7 @@ class Game:
         time.sleep(1)
         return passed
 
-    # ── Mini-game: Speed — Lightning Dash ───────────────
     def _minigame_speed(self) -> bool:
-        """
-        Lightning Dash: React to a prompt as fast as possible.
-        Player must type a short word within a time limit.
-        """
         clear()
         header("LIGHTNING DASH — SPEED TRIAL", self._hdr_path())
         slow_print([
@@ -890,14 +758,12 @@ class Game:
         ])
         pause("[ ENTER to get ready ]")
 
-        # countdown
         for count in ["3", "2", "1", f"{GREEN}{BOLD}GO!{RESET}"]:
             clear()
             header("LIGHTNING DASH — SPEED TRIAL", self._hdr_path())
             print(f"\n  {BOLD}{count}{RESET}\n")
             time.sleep(0.9 if count != f"{GREEN}{BOLD}GO!{RESET}" else 0.1)
 
-        # random short word to type
         words  = ["RENAN", "JULIANNE", "BENEDICT", "PATRICK", "SIXSEVEN", "WIND", "SURGE"]
         target = random.choice(words)
 
@@ -921,12 +787,7 @@ class Game:
             print(f"  {RED}Wrong word typed. Focus!{RESET}")
             return False
 
-    # ── Mini-game: Endurance — Breath Control ───────────
     def _minigame_endurance(self) -> bool:
-        """
-        Breath Control: A counting rhythm game.
-        Player must hit ENTER at the right intervals to match breathing timing.
-        """
         clear()
         header("BREATH CONTROL — ENDURANCE TRIAL", self._hdr_path())
         slow_print([
@@ -939,8 +800,8 @@ class Game:
         pause("[ ENTER to begin breathing ]")
 
         rounds   = 5
-        interval = 2.0   # target seconds between presses
-        tolerance= 0.6   # ± allowed deviation
+        interval = 2.0
+        tolerance= 0.6
         passed_rounds = 0
 
         clear()
@@ -974,14 +835,9 @@ class Game:
         time.sleep(1)
         return passed
 
-    # ════════════════════════════════════════════════════
-    #  STYLE SELECTION
-    # ════════════════════════════════════════════════════
-
     def _choose_style(self) -> None:
         p = self.player
 
-        # already chosen
         if p.path == "Human" and p.breathing:
             print(f"\n  {YELLOW}You have already chosen: {p.breathing}{RESET}")
             pause()
@@ -1002,7 +858,6 @@ class Game:
             label  = "Blood Art"
 
         print(f"  Choose your {label}:\n")
-        # for/enumerate — FR requirement
         for i, s in enumerate(styles, 1):
             forms_list = (BREATHING_FORMS if p.path == "Human" else BLOOD_ARTS)[s]
             print(f"  [{i}] {BOLD}{s}{RESET}")
@@ -1020,10 +875,6 @@ class Game:
 
         print(f"\n  {GREEN}You have chosen: {chosen}!{RESET}")
         pause()
-
-    # ════════════════════════════════════════════════════
-    #  ITEM SCREENS
-    # ════════════════════════════════════════════════════
 
     def _use_item_screen(self) -> None:
         p = self.player
@@ -1074,10 +925,6 @@ class Game:
         result = p.use_item(choice - 1)
         print(f"\n  {result}")
 
-    # ════════════════════════════════════════════════════
-    #  SHOP
-    # ════════════════════════════════════════════════════
-
     def _visit_shop(self) -> None:
         p = self.player
         while True:
@@ -1106,10 +953,6 @@ class Game:
                 print(f"\n  {RED}Not enough gold.{RESET}")
             pause()
 
-    # ════════════════════════════════════════════════════
-    #  RANK PROGRESS
-    # ════════════════════════════════════════════════════
-
     def _show_rank_progress(self) -> None:
         p      = self.player
         clear()
@@ -1134,16 +977,7 @@ class Game:
         print()
         pause()
 
-    # ════════════════════════════════════════════════════
-    #  NICHIRIN SWORD SELECTION
-    # ════════════════════════════════════════════════════
-
-    # ════════════════════════════════════════════════════
-    #  NICHIRIN SWORD ROLL  (like clan system)
-    # ════════════════════════════════════════════════════
-
     def _roll_sword(self) -> str:
-        """Randomly pick a sword colour weighted by rarity."""
         pool = []
         for colour, data in NICHIRIN_SWORDS.items():
             weight = NICHIRIN_SWORD_WEIGHTS.get(data["rarity"], 10)
@@ -1169,7 +1003,6 @@ class Game:
         ])
         pause("[ ENTER to reveal your blade ]")
 
-        # ── rolling animation ────────────────────────────
         clear()
         header("NICHIRIN BLADE AWAKENING", self._hdr_path())
         sword_names = list(NICHIRIN_SWORDS.keys())
@@ -1197,7 +1030,6 @@ class Game:
 
         p.sword_colour = colour
 
-        # apply stat bonuses
         stat, val = data["stat"]
         if   stat == "str": p.str_stat += val
         elif stat == "spd": p.spd      += val
@@ -1215,10 +1047,6 @@ class Game:
             "",
         ])
         pause()
-
-    # ════════════════════════════════════════════════════
-    #  DEMON SLAYER MARK
-    # ════════════════════════════════════════════════════
 
     def _try_awaken_mark(self) -> None:
         p = self.player
@@ -1257,10 +1085,6 @@ class Game:
         ])
         pause()
 
-    # ════════════════════════════════════════════════════
-    #  CUSTOM BREATHING (Hashira only)
-    # ════════════════════════════════════════════════════
-
     def _create_custom_style(self) -> None:
         p = self.player
         if p.custom_style:
@@ -1277,7 +1101,6 @@ class Game:
         ])
         pause("[ ENTER to begin forging ]")
 
-        # ── name the style ────────────────────────────────
         clear()
         header("FORGE YOUR BREATHING STYLE", self._hdr_path())
         print(f"  {DIM}What is the name of your Breathing Style?{RESET}")
@@ -1290,8 +1113,7 @@ class Game:
         print(f"\n  {CYAN}{BOLD}{style_name} Breathing{RESET} — forging your forms...\n")
         pause("[ ENTER to name your forms ]")
 
-        # ── name each form ────────────────────────────────
-        form_powers = [6, 8, 9, 11, 13]   # power stays fixed, only name changes
+        form_powers = [6, 8, 9, 11, 13]
         form_descs  = [
             "A form born from your own instinct — the first step.",
             "A fluid continuation — your body moves on its own.",
@@ -1317,7 +1139,6 @@ class Game:
             print(f"\n  {GREEN}✔  {fname}{RESET}  —  dmg {fpower}")
             time.sleep(0.3)
 
-        # ── name the ultimate ─────────────────────────────
         clear()
         header("FORGE YOUR BREATHING STYLE", self._hdr_path())
         print(f"  {CYAN}{BOLD}{style_name} Breathing{RESET}\n")
@@ -1334,7 +1155,6 @@ class Game:
         print(f"\n  {YELLOW}{BOLD}✦  {ult_name}{RESET}  —  dmg 22")
         time.sleep(0.3)
 
-        # ── confirm ───────────────────────────────────────
         clear()
         header("FORGE YOUR BREATHING STYLE", self._hdr_path())
         print(f"  {CYAN}{BOLD}{style_name} Breathing{RESET}\n")
@@ -1397,10 +1217,6 @@ class Game:
         print(f"\n  {YELLOW}{BOLD}✦ {ult_name} — unlocked!{RESET}")
         pause()
 
-    # ════════════════════════════════════════════════════
-    #  FINAL SELECTION
-    # ════════════════════════════════════════════════════
-
     def _final_selection(self) -> None:
         p = self.player
         clear()
@@ -1432,7 +1248,6 @@ class Game:
                 exp_reward  = 0,
             )
             if not won:
-                # ── FIXED: always restore HP after final selection ──
                 p.full_heal()
                 clear()
                 header("DEFEATED", self._hdr_path())
@@ -1442,7 +1257,6 @@ class Game:
                 pause()
                 break
 
-        # ── always restore HP when selection ends ────────
         p.full_heal()
 
         clear()
@@ -1467,10 +1281,6 @@ class Game:
         print(f"  {YELLOW}The swordsmith is waiting.{RESET}")
         pause("[ ENTER to choose your blade ]")
         self._choose_sword()
-
-    # ════════════════════════════════════════════════════
-    #  SAVE / LOAD  (JSON)
-    # ════════════════════════════════════════════════════
 
     SAVE_FILE = "wisteria_save.json"
 
@@ -1502,7 +1312,6 @@ class Game:
             "inventory":     [i.name for i in p.inventory],
             "using_custom":  p.using_custom,
             "custom_style":  p.custom_style,
-            # fishing extras (civilian)
             "fishing_lvl":   getattr(p, "fishing_lvl", 1),
             "fish_caught":   getattr(p, "fish_caught", 0),
         }
@@ -1563,11 +1372,6 @@ class Game:
         pause()
         return True
 
-    # ════════════════════════════════════════════════════
-    #  CIVILIAN LIFE
-    # ════════════════════════════════════════════════════
-
-    # Fish rarity table: (name, min_gold, max_gold, rarity_label, weight)
     FISH_TABLE = [
         ("Small Carp",       2,   5,  "Common",    40),
         ("River Trout",      5,  10,  "Common",    30),
@@ -1578,7 +1382,6 @@ class Game:
     ]
 
     def _civilian_loop(self) -> None:
-        """Full civilian game loop — no combat. Fish, rest, and save."""
         p = self.player
         if not hasattr(p, "fishing_lvl"):
             p.fishing_lvl = 1
@@ -1628,7 +1431,6 @@ class Game:
         ])
         time.sleep(0.4)
 
-        # Fishing mini-game: press ENTER at the right moment
         print(f"  {DIM}Watch for the tug… press ENTER when you see ✦ !{RESET}\n")
         time.sleep(random.uniform(1.2, 3.0))
 
@@ -1642,15 +1444,12 @@ class Game:
         inp = input("  > ")
         react_time = time.time() - tug_time
 
-        # Higher fishing_lvl = more forgiving window
         window = 1.2 + (p.fishing_lvl * 0.15)
 
         if react_time <= window:
-            # weight table adjusted by fishing level
             pool = []
             for entry in self.FISH_TABLE:
                 weight = entry[4]
-                # higher level boosts rarer fish
                 if entry[3] in ("Rare", "Epic", "Legendary"):
                     weight += p.fishing_lvl * 2
                 pool.extend([entry] * weight)
@@ -1670,7 +1469,6 @@ class Game:
             print(f"\n  {rarity_color}{BOLD}You caught: {name}!{RESET}  [{rarity}]")
             print(f"  {GREEN}+{gold_earned}G{RESET}  |  Total fish: {p.fish_caught}")
 
-            # level up fishing every 5 fish
             if p.fish_caught % 5 == 0 and p.fishing_lvl < 10:
                 p.fishing_lvl += 1
                 print(f"\n  {YELLOW}✦ Fishing Level Up! Now Lv.{p.fishing_lvl}{RESET}")
@@ -1697,10 +1495,6 @@ class Game:
         p.full_heal()
         print(f"  {GREEN}HP fully restored.{RESET}")
         pause()
-
-    # ════════════════════════════════════════════════════
-    #  HUMAN PATH CHOICE
-    # ════════════════════════════════════════════════════
 
     def _human_path_choice(self) -> None:
         clear()
@@ -1741,10 +1535,6 @@ class Game:
             print(f"  {YELLOW}You remain a civilian.{RESET}")
             pause()
             self._civilian_loop()
-
-    # ════════════════════════════════════════════════════
-    #  CHARACTER CREATION
-    # ════════════════════════════════════════════════════
 
     def _create_character(self) -> Player:
         clear()
@@ -1794,10 +1584,6 @@ class Game:
             pool.extend([name] * RARITY_WEIGHTS[data["rarity"]])
         return random.choice(pool)
 
-    # ════════════════════════════════════════════════════
-    #  PATH INTRO  (called after character creation)
-    # ════════════════════════════════════════════════════
-
     def _path_intro(self) -> None:
         p = self.player
         if p.path == "Human":
@@ -1825,10 +1611,6 @@ class Game:
             ])
             pause()
 
-    # ════════════════════════════════════════════════════
-    #  CREDITS SPLASH
-    # ════════════════════════════════════════════════════
-
     def _credits_splash(self) -> None:
         import shutil as _sh, sys as _sys
         clear()
@@ -1849,7 +1631,6 @@ class Game:
             b = int(keys[lo][2] + (keys[hi][2] - keys[lo][2]) * f)
             return _rgb(r, g, b)
 
-        # ── big ASCII block art title ────────────────────
         _ART = [
                 r"                                                                                                                                                                                ",
                 r"                                                                                                                                                                                ",
@@ -1889,7 +1670,6 @@ class Game:
 
         print()
 
-        # ── course subtitle ──────────────────────────────
         course = "DCSN03C  ·  Computer Programming 2  ·  Finals Project"
         divln  = "═" * min(len(course) + 4, term_w - 4)
         pad_c  = max(0, (term_w - len(course)) // 2)
@@ -1900,7 +1680,6 @@ class Game:
         print()
         time.sleep(0.3)
 
-        # ── made by — each name fades in individually ────
         label   = "✦  Made by  ✦"
         pad_l   = max(0, (term_w - len(label)) // 2)
         col_lbl = _lerp(_PINK_KEYS, 0.4)
@@ -1920,7 +1699,6 @@ class Game:
 
         for name, role in names:
             line    = f"{name}  {DIM}— {role}{RESET}"
-            # measure visible length (strip ANSI for centering)
             visible = f"{name}  — {role}"
             pad_n   = max(0, (term_w - len(visible)) // 2)
             NF = 12
@@ -1942,15 +1720,10 @@ class Game:
         time.sleep(0.4)
         pause("  [ ENTER to begin ]")
 
-    # ════════════════════════════════════════════════════
-    #  CINEMATIC INTRO
-    # ════════════════════════════════════════════════════
-
     def _cinematic_intro(self) -> None:
         import shutil as _sh
         clear()
         time.sleep(0.3)
-
 
         ascii_header("THE WORLD OF WISTERIA", self._hdr_path())
         time.sleep(0.4)
