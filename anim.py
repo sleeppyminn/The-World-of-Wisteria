@@ -1,33 +1,22 @@
-# ═══════════════════════════════════════════════════════
-#  anim.py — Animation helpers (ANSI color FX)
-#  Breathing style color flicker, menu shimmer, form banners
-# ═══════════════════════════════════════════════════════
-
 import time
 import random
 import sys
 import os
 
-# ── ANSI escape helpers ──────────────────────────────────
 RESET  = "\033[0m"
 BOLD   = "\033[1m"
 DIM    = "\033[2m"
 
 def _rgb(r: int, g: int, b: int) -> str:
-    """Return an ANSI 24-bit foreground color escape."""
     return f"\033[38;2;{r};{g};{b}m"
 
 def _bg_rgb(r: int, g: int, b: int) -> str:
-    """Return an ANSI 24-bit background color escape."""
     return f"\033[48;2;{r};{g};{b}m"
 
 def _clear_line() -> None:
     sys.stdout.write("\033[2K\033[G")
     sys.stdout.flush()
 
-# ── Per-style color palettes ─────────────────────────────
-# Each style has a list of (R, G, B) "keyframes" the flicker
-# cycles through using PRNG interpolation.
 STYLE_PALETTES = {
     "Water":   [(180, 220, 255), (100, 180, 255), (200, 240, 255), (60, 140, 220)],
     "Flame":   [(255, 80,  20),  (255, 160, 30),  (255, 220, 60),  (200, 40, 10)],
@@ -41,12 +30,10 @@ STYLE_PALETTES = {
     "Mist":    [(160, 200, 220), (200, 220, 240), (120, 160, 190), (180, 210, 230)],
 }
 
-# Fallback for custom or unknown styles
 DEFAULT_PALETTE = [(200, 200, 200), (255, 255, 255), (180, 180, 255), (220, 220, 255)]
 
 
 def _lerp_color(c1: tuple, c2: tuple, t: float) -> tuple:
-    """Linear interpolate between two RGB tuples.  t in [0, 1]."""
     return (
         int(c1[0] + (c2[0] - c1[0]) * t),
         int(c1[1] + (c2[1] - c1[1]) * t),
@@ -55,42 +42,21 @@ def _lerp_color(c1: tuple, c2: tuple, t: float) -> tuple:
 
 
 def _prng_flicker_color(palette: list, seed_offset: float) -> tuple:
-    """
-    Picks a smoothly wandering color from the palette using
-    a sine-based PRNG feel — no two flickers look the same.
-    seed_offset should increase over time (e.g., time.time()).
-    """
     import math
     n  = len(palette)
-    # continuous fractional index driven by overlapping sine waves
     raw = (
         math.sin(seed_offset * 2.1)  * 0.4 +
         math.sin(seed_offset * 3.7)  * 0.3 +
         math.sin(seed_offset * 0.9)  * 0.3
     )
-    frac_idx = ((raw + 1) / 2) * (n - 1)   # map [-1,1] → [0, n-1]
+    frac_idx = ((raw + 1) / 2) * (n - 1)
     lo  = int(frac_idx) % n
     hi  = (lo + 1) % n
     t   = frac_idx - int(frac_idx)
     return _lerp_color(palette[lo], palette[hi], t)
 
 
-# ════════════════════════════════════════════════════════
-#  1.  BREATHING FORM ACTIVATION BANNER
-#      Shows the form name with style-colored shimmer,
-#      then fades out. Duration ≈ 1.0 s.
-# ════════════════════════════════════════════════════════
-
 def breathing_form_banner(style: str, form_name: str, duration: float = 0.3) -> None:
-    """
-    Flicker-animate a form name in the style's signature color.
-
-    Usage (in game.py, right before the damage print):
-        from anim import breathing_form_banner
-        breathing_form_banner(p.breathing or "Water", fname)
-
-    The animation runs for `duration` seconds then returns.
-    """
     palette = STYLE_PALETTES.get(style, DEFAULT_PALETTE)
     border  = "─" * (len(form_name) + 6)
     lines   = [
@@ -102,16 +68,14 @@ def breathing_form_banner(style: str, form_name: str, duration: float = 0.3) -> 
     start = time.time()
     rows  = len(lines)
 
-    # move cursor up after first draw so we can redraw in-place
     first = True
     while time.time() - start < duration:
         t      = time.time()
-        color  = _prng_flicker_color(palette, t * 6)   # ×6 → faster flicker
+        color  = _prng_flicker_color(palette, t * 6)
         esc    = _rgb(*color)
-        bright = random.random() > 0.7                  # occasional bold flash
+        bright = random.random() > 0.7
 
         if not first:
-            # move cursor up `rows` lines to redraw
             sys.stdout.write(f"\033[{rows}A")
 
         for line in lines:
@@ -120,56 +84,28 @@ def breathing_form_banner(style: str, form_name: str, duration: float = 0.3) -> 
             print(f"{prefix}{esc}{line}{RESET}")
 
         first = False
-        time.sleep(0.01)   # ~100 fps — the 0.01s PRNG flicker you asked for
+        time.sleep(0.01)
 
-    print()   # leave one blank line after banner
+    print()
 
-
-# ════════════════════════════════════════════════════════
-#  2.  INLINE DAMAGE TEXT COLORIZER
-#      Returns a one-liner string with shimmering style color.
-#      Use anywhere you currently print dmg info.
-# ════════════════════════════════════════════════════════
 
 def style_colored(style: str, text: str) -> str:
-    """
-    Returns `text` wrapped in the style's primary color.
-
-    Usage:
-        print(style_colored(p.breathing, f"  {fname}"))
-    """
     palette = STYLE_PALETTES.get(style, DEFAULT_PALETTE)
     r, g, b = palette[0]
     return f"{_rgb(r, g, b)}{BOLD}{text}{RESET}"
 
 
-# ════════════════════════════════════════════════════════
-#  3.  ULTIMATE ATTACK FLASH
-#      Full-screen color surge then fades — ≈ 0.8 s.
-# ════════════════════════════════════════════════════════
-
 def ultimate_flash(style: str, ult_name: str) -> None:
-    """
-    A dramatic full-width flash when ultimate is used.
-
-    Usage (replace the current ult print block in game.py):
-        from anim import ultimate_flash
-        ultimate_flash(p.breathing or "Water", uname)
-
-    After this returns, print the damage line as usual.
-    """
     palette = STYLE_PALETTES.get(style, DEFAULT_PALETTE)
     width   = 52
     bar     = "█" * width
 
     phases = [
-        # (duration_s, speed_multiplier)
-        (0.08, 10),   # rapid buildup
-        (0.10, 6),    # peak shimmer
-        (0.07, 3),    # slow fade
+        (0.08, 10),
+        (0.10, 6),
+        (0.07, 3),
     ]
 
-    # top label
     pad = max(0, (width - len(ult_name)) // 2)
     label_line = " " * pad + ult_name
 
@@ -181,7 +117,7 @@ def ultimate_flash(style: str, ult_name: str) -> None:
             color = _prng_flicker_color(palette, t * speed)
             esc   = _rgb(*color)
             if not first:
-                sys.stdout.write("\033[3A")   # 3 rows up
+                sys.stdout.write("\033[3A")
             _clear_line(); print(f"\n{esc}{BOLD}  {bar}{RESET}")
             _clear_line(); print(f"{esc}{BOLD}  {label_line}{RESET}")
             _clear_line(); print(f"{esc}{BOLD}  {bar}{RESET}")
@@ -191,12 +127,6 @@ def ultimate_flash(style: str, ult_name: str) -> None:
     print()
 
 
-# ════════════════════════════════════════════════════════
-#  4.  ANIMATED MAIN MENU
-#      Uses hardcoded 3d_diagonal ASCII art for the title.
-# ════════════════════════════════════════════════════════
-
-# "THE WORLD OF WISTERIA" — ANSI Shadow art
 _TITLE_ROWS = [
     r"                                                                                                                                                                                ",
     r"                                                                                                                                                                                ",
@@ -217,8 +147,6 @@ _TITLE_ROWS = [
 
 _TITLE_KEYS = [(255,255,255),(255,200,220),(255,140,180),(255,90,140),(255,255,255)]
 
-# Path-specific color palettes for the main game-loop header
-# Each palette: white → mid-color → saturated → mid-color → white
 _PATH_KEYS = {
     "Demon":    [(255,255,255),(255,120,120),(220,30,30),(255,80,80),(255,255,255)],
     "Human":    [(255,255,255),(120,180,255),(30,100,220),(80,150,255),(255,255,255)],
@@ -237,28 +165,25 @@ def _title_color(t: float) -> str:
     return f"\033[38;2;{r};{g};{b}m"
 
 
-
 def animated_main_menu() -> None:
-    """3d_diagonal ASCII art title with looping color cycle, then fast menu fade-in."""
     import shutil
     os.system("cls" if os.name == "nt" else "clear")
 
     term_w = shutil.get_terminal_size((80, 24)).columns
 
     NROWS     = len(_TITLE_ROWS)
-    FRAMES    = 80        # total animation frames before menu appears
-    LOOP_LEN  = 20        # frames per full color cycle — loops continuously
+    FRAMES    = 100
+    LOOP_LEN  = 30
     MENU_OPTS = ["  [1] New Game", "  [2] Load Game", "  [0] Exit"]
     FINAL_C   = _rgb(200, 210, 255)
 
-    # center the art based on the widest row
     art_w = max(len(r) for r in _TITLE_ROWS)
     pad   = max(0, (term_w - art_w) // 2)
 
     print()
     first = True
     for i in range(FRAMES):
-        t   = (i / LOOP_LEN) % 1.0    # loops 0→1 continuously
+        t   = (i / LOOP_LEN) % 1.0
         col = _title_color(t)
 
         if not first:
@@ -271,12 +196,10 @@ def animated_main_menu() -> None:
         sys.stdout.flush()
         time.sleep(0.04)
 
-    # Divider
     div_w = min(52, term_w - 4)
     sys.stdout.write(f"\033[2K{_rgb(80,80,120)}  {'─'*div_w}{RESET}\n")
     print()
 
-    # Menu fade-in
     FADE = 6
     first_m = True
     for step in range(FADE):
@@ -291,7 +214,6 @@ def animated_main_menu() -> None:
         first_m = False
         time.sleep(0.025)
 
-    # Settle
     sys.stdout.write(f"\033[{len(MENU_OPTS)}A")
     for opt in MENU_OPTS:
         _clear_line()
@@ -299,7 +221,6 @@ def animated_main_menu() -> None:
     sys.stdout.flush()
     print()
 
-# ANSI Shadow art blocks from wisteria_battle_focus.txt
 WISTERIA_ART = {
     'YOUR PATH HERE': [
         '██╗   ██╗ ██████╗ ██╗   ██╗██████╗     ██████╗  █████╗ ████████╗██╗  ██╗    ██╗  ██╗███████╗██████╗ ███████╗',
@@ -586,19 +507,7 @@ WISTERIA_ART = {
 }
 
 
-# ════════════════════════════════════════════════════════
-#  5.  3D_DIAGONAL ASCII ART HEADER
-#      Looks up pre-rendered art from WISTERIA_ART and
-#      animates it with the same color cycle as the main
-#      menu. Falls back to a plain print for unknown titles.
-#
-#      Usage (drop-in replacement for the old header()):
-#          from anim import ascii_header
-#          ascii_header("BATTLE")
-# ════════════════════════════════════════════════════════
-
 def _normalize_key(title: str) -> str:
-    """Normalize em-dash variants and map old compound keys to new ANSI shadow keys."""
     t = title.replace("\u2014", "-").replace("\u2013", "-").replace("\u2212", "-").upper().strip()
     _ALIASES = {
         "BOULDER SMASH - STRENGTH TRIAL":    "BOULDER SMASH",
@@ -617,10 +526,6 @@ def _normalize_key(title: str) -> str:
 
 
 def battle_header() -> None:
-    """
-    Print the BATTLE ASCII art instantly (no animation) for use
-    inside the combat loop where clear() runs every turn.
-    """
     import shutil as _sh
     rows   = WISTERIA_ART.get("BATTLE", [])
     term_w = _sh.get_terminal_size((80, 24)).columns
@@ -634,32 +539,17 @@ def battle_header() -> None:
 
 
 def ascii_header(title: str, path: str = None) -> None:
-    """
-    Display the pre-rendered 3d_diagonal ASCII art for `title`
-    with a brief color-cycle animation, then return.
-
-    path controls the color palette:
-      None / not given → pink (used for intro/main-menu contexts)
-      "Demon"          → white → red
-      "Human"          → white → blue
-      "Civilian"       → white → green
-
-    Falls back to a plain centered text banner if the title
-    isn't in WISTERIA_ART (e.g. dynamic chapter titles).
-    """
     import sys as _sys, shutil as _sh, time as _time, math as _math
 
     key = _normalize_key(title)
     rows = WISTERIA_ART.get(key)
 
-    # Pick palette: None/unknown → pink, otherwise path-specific
     _KEYS = _PATH_KEYS.get(path, [(255,255,255),(255,200,220),(255,140,180),(255,90,140),(255,255,255)])
 
     if rows is None:
-        # Fallback: plain bold centered line in palette's saturated color
         term_w = _sh.get_terminal_size((80, 24)).columns
         pad = max(0, (term_w - len(title)) // 2)
-        r, g, b = _KEYS[2]  # use the saturated midpoint color
+        r, g, b = _KEYS[2]
         print()
         print(f"\033[1m\033[38;2;{r};{g};{b}m{' ' * pad}{title}\033[0m")
         print()
@@ -700,18 +590,6 @@ def ascii_header(title: str, path: str = None) -> None:
 
 
 def path_colored_header(title: str, path: str = "Human") -> None:
-    """
-    Like ascii_header() but cycles through a path-specific color palette
-    instead of the default pink wisteria palette.
-
-    path values: "Demon"    → white → red
-                 "Human"    → white → blue  (Demon Slayer Corps)
-                 "Civilian" → white → green
-
-    Usage (in game_loop):
-        from anim import path_colored_header
-        path_colored_header("THE WORLD OF WISTERIA", player.path)
-    """
     import sys as _sys, shutil as _sh, time as _time
 
     key  = _normalize_key(title)
