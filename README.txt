@@ -1,6 +1,7 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   DEMON SLAYER RPG — Text-Based Python Game
   DCSN03C | Computer Programming 2 | Finals Project
+  Created: May 2025
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 HOW TO RUN
